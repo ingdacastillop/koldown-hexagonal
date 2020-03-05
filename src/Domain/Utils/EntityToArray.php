@@ -14,41 +14,9 @@ class EntityToArray {
     
     /**
      *
-     * @var EntityToArray 
-     */
-    private static $instance = null;
-    
-    /**
-     *
      * @var ReflectionClass 
      */
     private $reflection;
-    
-    /**
-     *
-     * @var array 
-     */
-    private $result = [];
-    
-    // Constructor de la clase EntityToArray
-    
-    private function __construct() {
-        
-    }
-    
-    // Métodos estáticos de la clase EntityToArray
-
-    /**
-     * 
-     * @return EntityToArray
-     */
-    public static function getInstance(): EntityToArray {
-        if (is_null(self::$instance)) {
-            self::$instance = new EntityToArray();
-        } // Instanciando clase EntityToArray
-        
-        return self::$instance; // Retornando instancia
-    }
     
     // Métodos de la clase EntityToArray
     
@@ -58,30 +26,20 @@ class EntityToArray {
      * @return array
      */
     public function execute(IEntity $entity, $discards = []): array {
-        $this->result     = []; // Reiniciando array de resultado
-        
         $this->reflection = new ReflectionClass($entity);
+        $result           = []; // Array de entidad
         
         foreach ($this->reflection->getProperties() as $property) {
             if (!in_array($property->getName(), $discards)) { 
-                $this->setValueKeyArray($property, $entity);
+                $value = $this->getValueKeyEntity($property, $entity);
+
+                if (!is_null($value)) {
+                    $result[$property->getName()] = $value; // Estableciendo
+                }
             } 
         }
         
-        return $this->result; // Retorna resultado del mapeado
-    }
-    
-    /**
-     * 
-     * @param ReflectionProperty $property
-     * @param IEntity $entity
-     */
-    private function setValueKeyArray(ReflectionProperty $property, IEntity $entity) {
-        $value = $this->getValueKeyEntity($property, $entity);
-
-        if (!is_null($value)) {
-            $this->result[$property->getName()] = $value; // Estableciendo
-        }
+        return $result; // Retorna array generado de la entidad
     }
 
     /**
