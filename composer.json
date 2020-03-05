@@ -1,0 +1,19 @@
+{
+    "name": "koldown/hexagonal",
+    "type": "library",
+    "description": "Librería que proporciona un conjunto de clase para implementar arquitectura hexagonal",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ing.dacastillop",
+            "email": "ing.dacastillop@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Koldown\\Hexagonal\\": "src/"
+        }
+    }
+}
