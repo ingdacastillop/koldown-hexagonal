@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Collection;
 use Koldown\Hexagonal\Domain\Contracts\IRepository;
 use Koldown\Hexagonal\Domain\Contracts\IEntity;
 use Koldown\Hexagonal\Domain\Contracts\IEntityCollection;
+use Koldown\Hexagonal\Domain\Contracts\IEntityMapper;
 use Koldown\Hexagonal\Domain\Utils\EntityMapper;
+
 use Koldown\Hexagonal\Infrastructure\Utils\Model;
 use Koldown\Hexagonal\Infrastructure\Utils\Resource;
 
@@ -112,10 +114,10 @@ class Repository implements IRepository {
     
     /**
      * 
-     * @param EntityMapper $entityMapper
+     * @param IEntityMapper $entityMapper
      * @return void
      */
-    public function setMapper(EntityMapper $entityMapper): void {
+    public function setMapper(IEntityMapper $entityMapper): void {
         $this->entityMapper = $entityMapper;
     }
 
@@ -123,12 +125,20 @@ class Repository implements IRepository {
      * 
      * @return EntityMapper
      */
-    public function getMapper(): EntityMapper {
+    public function getMapper(): IEntityMapper {
         if (is_null($this->entityMapper)) {
-            $this->entityMapper = new EntityMapper();
+            $this->entityMapper = $this->getInstanceMapper();
         } // Instanciando mapeador del repositorio
         
         return $this->entityMapper; // Retornando mapeador
+    }
+    
+    /**
+     * 
+     * @return IEntityMapper
+     */
+    protected function getInstanceMapper(): IEntityMapper {
+        return new EntityMapper();
     }
 
     /**
@@ -163,11 +173,11 @@ class Repository implements IRepository {
     
     /**
      * 
-     * @param IModelo|null $source
+     * @param Model|null $source
      * @param string|null $class
      * @return IEntity|null
      */
-    protected final function createEntity(?IModelo $source, ?string $class = null): ?IEntity {
+    protected function createEntity(?Model $source, ?string $class = null): ?IEntity {
         if (is_null($source)) { 
             return null; // Modelo se encuentra indefinido
         } 
@@ -185,7 +195,7 @@ class Repository implements IRepository {
      * @param string|null $class
      * @return IEntityCollection
      */
-    protected final function createCollection(Collection $models, ?string $class = null): IEntityCollection {
+    protected function createCollection(Collection $models, ?string $class = null): IEntityCollection {
         $entities = $this->getCollection(); // Colección de entidades
         
         foreach ($models as $model) {

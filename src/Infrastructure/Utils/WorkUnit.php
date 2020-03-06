@@ -253,7 +253,7 @@ class WorkUnit implements IWorkUnit {
      * @return void
      */
     protected function update(IEntity $entity, EntityStatus $item): void {
-        if ($item->getEntidad() != $entity) {
+        if ($item->getEntity() != $entity) {
             $data = $this->getArrayUpdate($entity, $item->getEntity());
 
             $this->getRepository(get_class($entity))->update($entity->getPrimaryKey(), $data);
@@ -266,7 +266,7 @@ class WorkUnit implements IWorkUnit {
      * @param IEntity $clone
      * @return array
      */
-    private function getArrayUpdate(IEntity $entity, IEntity $clone): array {
+    protected function getArrayUpdate(IEntity $entity, IEntity $clone): array {
         $arrayUpdate = []; // Array para actualizar
         
         $arrayEntidad = $entity->toArray();

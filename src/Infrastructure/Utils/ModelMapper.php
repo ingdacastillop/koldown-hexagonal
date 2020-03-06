@@ -2,7 +2,8 @@
 
 namespace Koldown\Hexagonal\Infrastructure\Utils;
 
-use Koldown\Hexagonal\Infrastructure\Utils\IModelMapper;
+use Koldown\Hexagonal\Infrastructure\Contracts\IModel;
+use Koldown\Hexagonal\Infrastructure\Contracts\IModelMapper;
 
 class ModelMapper implements IModelMapper {
     
@@ -28,7 +29,7 @@ class ModelMapper implements IModelMapper {
      */
     public static function getInstance(): ModelMapper {
         if (is_null(self::$instance)) {
-            self::$instance = new ModelMapper();
+            self::$instance = new static();
         } // Instanciando clase ModelMapper
         
         return self::$instance; // Retornando instancia
@@ -36,7 +37,7 @@ class ModelMapper implements IModelMapper {
     
     // Métodos sobrescritos de la interfaz IModelMapper
     
-    public function ofArray(?array $source, IModelo $destination): ?IModelo {
+    public function ofArray(?array $source, IModel $destination): ?IModel {
         if (is_null($source) || is_null($destination)) { 
             return null; // No se puede realizar mapeo del modelo
         } 

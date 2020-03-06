@@ -27,7 +27,7 @@ class Aggregations implements IAggregations {
     
     // Métodos de la clase Aggregations
     
-    public function set(string $key, IAggregation $aggregation) {
+    public function set(string $key, IAggregation $aggregation): void {
         $this->aggregations[$key] = $aggregation; 
     }
     

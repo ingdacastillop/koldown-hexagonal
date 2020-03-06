@@ -20,7 +20,7 @@ class EntityMapper implements IEntityMapper {
     
     // Métodos sobrescritos de la interfaz IEntityMapper
     
-    public function clean(): EntityMapper {
+    public function clean(): IEntityMapper {
         $this->entities = []; return $this;
     }
     
@@ -53,7 +53,7 @@ class EntityMapper implements IEntityMapper {
      * @param type $value
      * @return void
      */
-    private function setValueKeyEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value): void {
+    protected function setValueKeyEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value): void {
         if ($reflection->hasProperty($key)) {
             $this->setValuePropertyEntity($reflection, $entity, $key, $value);
         } else {
@@ -68,7 +68,7 @@ class EntityMapper implements IEntityMapper {
      * @param type $value
      * @return void
      */
-    private function setValuePropertyEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value): void {
+    protected function setValuePropertyEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value): void {
         $accessor = $reflection->getProperty($key);
 
         if ($accessor->isPublic()) {
@@ -84,7 +84,7 @@ class EntityMapper implements IEntityMapper {
      * @param string $key
      * @param type $value
      */
-    private function setValueMethodEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value) {
+    protected function setValueMethodEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value) {
         $setter = "set{$this->getCamelCaseName($key)}"; // Método
             
         if ($reflection->hasMethod($setter)) {
@@ -101,7 +101,7 @@ class EntityMapper implements IEntityMapper {
      * @param string $key
      * @return string
      */
-    private function getCamelCaseName(string $key): string {
+    protected function getCamelCaseName(string $key): string {
         return str_replace(" ", "", ucwords(str_replace(array("_", "-"), " ", $key)));
     }
 
@@ -112,7 +112,7 @@ class EntityMapper implements IEntityMapper {
      * @param mixed $value
      * @return mixed|null
      */
-    private function getValue(IEntity $entity, string $key, $value) {
+    protected function getValue(IEntity $entity, string $key, $value) {
         if (is_null($value)) { 
             return null; // Valor indefinido, no se debe gestionar dato
         } 
@@ -132,25 +132,25 @@ class EntityMapper implements IEntityMapper {
     
     /**
      * 
-     * @param string $class
-     * @param type $value
+     * @param string $classEntity
+     * @param mixed $value
      * @return IEntity|null
      */
-    private function createEntity(string $class, $value): ?IEntity {
-        return $this->ofArray($value, new $class()); // Retornando entidad generada
+    protected function createEntity(string $classEntity, $value): ?IEntity {
+        return $this->ofArray($value, new $classEntity()); // Retornando entidad generada
     }
     
     /**
      * 
-     * @param string $class
-     * @param mixed $value
+     * @param string $classEntity
+     * @param mixed $collection
      * @return IEntityCollection 
      */
-    private function createCollection(string $class, $value): IEntityCollection {
+    protected function createCollection(string $classEntity, $collection): IEntityCollection {
         $array = $this->getCollection(); // Colección 
         
-        foreach ($value as $item) {
-            $array->add($this->createEntity($class, $item));
+        foreach ($collection as $value) {
+            $array->add($this->createEntity($classEntity, $value));
         } // Cargando entidades del listado
         
         return $array; // Retornando entidades generadas

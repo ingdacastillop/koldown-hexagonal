@@ -1,8 +1,6 @@
 <?php
 
-namespace Koldown\Hexagonal\Infrastructure\Utils;
-
-use Koldown\Hexagonal\Infrastructure\Persistence\IModel;
+namespace Koldown\Hexagonal\Infrastructure\Contracts;
 
 interface IModelMapper {
     

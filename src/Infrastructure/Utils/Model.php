@@ -2,10 +2,12 @@
 
 namespace Koldown\Hexagonal\Infrastructure\Utils;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as ModelLaravel;
 use Illuminate\Database\Eloquent\Builder;
 
 use Koldown\Hexagonal\Infrastructure\Contracts\IModel;
+use Koldown\Hexagonal\Infrastructure\Contracts\IModelMapper;
 
 class Model extends ModelLaravel implements IModel {
     
@@ -63,7 +65,7 @@ class Model extends ModelLaravel implements IModel {
      * @return void
      */
     public function setArray(array $array): void {
-        ModelMapper::getInstance()->ofArray($array, $this);
+        $this->getInstanceMapper()->ofArray($array, $this);
     }
     
     /**
@@ -72,9 +74,17 @@ class Model extends ModelLaravel implements IModel {
      * @return array
      */
     public function getFormatArray(array $array): array {
-        return ModelMapper::getInstance()->getFormatArray($array, $this->getConversions());
+        return $this->getInstanceMapper()->getFormatArray($array, $this->getConversions());
     }
     
+    /**
+     * 
+     * @return IModelMapper
+     */
+    protected function getInstanceMapper(): IModelMapper {
+        return ModelMapper::getInstance();
+    }  
+
     // Métodos sobrescritos de la interfaz IModel
 
     public function register(array $data): void {
@@ -89,11 +99,11 @@ class Model extends ModelLaravel implements IModel {
         return $this->with($aggregations)->get();
     }
 
-    public function find($id, array $columns = ["*"]): ?IModelo {
+    public function find($id, array $columns = ["*"]): ?IModel {
         return $this->select($columns)->where($this->primaryKey, $id)->first();
     }
 
-    public function record($id, array $aggregations = array()): ?IModelo {
+    public function record($id, array $aggregations = array()): ?IModel {
         return $this->where($this->primaryKey, $id)->with($aggregations)->first();
     }
 
