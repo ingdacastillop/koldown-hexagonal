@@ -10,9 +10,6 @@ use Koldown\Hexagonal\Domain\Contracts\IEntityCollection;
 use Koldown\Hexagonal\Domain\Contracts\IEntityMapper;
 use Koldown\Hexagonal\Domain\Utils\EntityMapper;
 
-use Koldown\Hexagonal\Infrastructure\Utils\Model;
-use Koldown\Hexagonal\Infrastructure\Utils\Resource;
-
 class Repository implements IRepository {
     
     // Atributos de la clase Repository
@@ -58,17 +55,17 @@ class Repository implements IRepository {
     public function insert(IEntity $entity): void {
         $hidrations = $entity->getAggregations()->getHidrationKeys();
         
-        $model      = $this->getResource()->insert($entity->toArray(), $hidrations);
+        $model      = $this->getQuery()->insert($entity->toArray(), $hidrations);
         
         $this->mapper($model, $entity); // Actualizando entity generada
     }
 
     public function find($id): ?IEntity {
-        return $this->createEntity($this->getResource()->find($id));
+        return $this->createEntity($this->getQuery()->find($id));
     }
 
     public function findAll(): IEntityCollection {
-        return $this->createCollection($this->getResource()->rows());
+        return $this->createCollection($this->getQuery()->rows());
     }
 
     public function fetch($id, array $aggregations = null): ?IEntity {
@@ -76,7 +73,7 @@ class Repository implements IRepository {
             $aggregations = $this->getEntity()->getAggregations()->getCompositionKeys();
         } // Estableciendo relaciones predeterminadas
         
-        return $this->createEntity($this->getResource()->record($id, $aggregations));
+        return $this->createEntity($this->getQuery()->record($id, $aggregations));
     }
 
     public function fetchAll(array $aggregations = null): IEntityCollection {
@@ -84,30 +81,30 @@ class Repository implements IRepository {
             $aggregations = $this->getEntity()->getAggregations()->getCompositionKeys();
         } // Estableciendo relaciones predeterminadas
         
-        return $this->createCollection($this->getResource()->catalog($aggregations));
+        return $this->createCollection($this->getQuery()->catalog($aggregations));
     }
     
     public function resources(): IEntityCollection {
         $entity       = $this->getEntity(); // Entidad que gestiona recurso
         $aggregations = $entity->getAggregations()->getCompositionKeys();
         
-        return $this->createCollection($this->getResource($entity)->catalog($aggregations));
+        return $this->createCollection($this->getQuery($entity)->catalog($aggregations));
     }
 
     public function update($id, array $data): void {
-        $this->getResource()->update($id, $data);
+        $this->getQuery()->update($id, $data);
     }
 
     public function save(IEntity $entity): void {
         $hidrations = $entity->getAggregations()->getHidrationKeys();
         
-        $modelo     = $this->getResource()->update($entity->getPrimaryKey(), $entity->toArray(), $hidrations);
+        $modelo     = $this->getQuery()->update($entity->getPrimaryKey(), $entity->toArray(), $hidrations);
         
         $this->mapper($modelo, $entity); // Actualizando entity generada
     }
     
     public function delete(IEntity $entity): void {
-        $this->getResource()->delete($entity->getPrimaryKey());
+        $this->getQuery()->delete($entity->getPrimaryKey());
     }
     
     // Métodos de la clase Repository
@@ -144,17 +141,17 @@ class Repository implements IRepository {
     /**
      * 
      * @param IEntity|null $entity
-     * @return Resource
+     * @return Query
      */
-    protected function getResource(?IEntity $entity = null): Resource {
+    protected function getQuery(?IEntity $entity = null): Query {
         if (is_null($entity)) {
             $entity = $this->getEntity();
         } // Definiendo entity
         
-        $recurso = (new Resource($entity->getTable()));
-        $recurso->setContext($this->getContext());
+        $query = new Query($entity->getTable());
+        $query->setContext($this->getContext());
         
-        return $recurso; // Retornando recurso de la entity
+        return $query; // Retornando query de la Entity
     }
     
     /**
