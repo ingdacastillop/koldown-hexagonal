@@ -8,6 +8,8 @@ use ReflectionProperty;
 use Koldown\Hexagonal\Domain\Contracts\IEntity;
 use Koldown\Hexagonal\Domain\Contracts\IEntityCollection;
 
+use Koldown\Utils\Str;
+
 class EntityToArray {
     
     // Atributos de la clase EntityToArray
@@ -68,13 +70,13 @@ class EntityToArray {
      * @return mixed
      */
     private function getValueMethodEntity(ReflectionProperty $property, IEntity $entity) {        
-        $getter = "get{$this->getCamelCaseName($property->getName())}";
+        $getter = Str::getInstance()->getCamelCase()->getter($property->getName());
             
         if ($this->reflection->hasMethod($getter)) {
             return $this->getValueMethod($getter, $entity); // Método getter
         }
         
-        $ister = "is{$this->getCamelCaseName($property->getName())}";
+        $ister = Str::getInstance()->getCamelCase()->ister($property->getName());
             
         if ($this->reflection->hasMethod($ister)) {
             return $this->getValueMethod($ister, $entity);  // Método ister
@@ -88,17 +90,8 @@ class EntityToArray {
      * @return mixed
      */
     private function getValueMethod(string $method, IEntity $entity) {
-        $accessor = $this->reflection->getMethod($method); // Método de la clase
+        $accessor = $this->reflection->getMethod($method); // Método de la entidad
             
         return (!$accessor->isPublic()) ? null : $accessor->invoke($entity);
-    }
-
-    /**
-     * 
-     * @param string $property
-     * @return string
-     */
-    private function getCamelCaseName(string $property): string {
-        return str_replace(" ", "", ucwords(str_replace(array("_", "-"), " ", $property)));
     }
 }

@@ -86,13 +86,6 @@ interface IQuery {
     
     /**
      * 
-     * @param IWhere $where
-     * @return IQuery
-     */
-    public function nested(IWhere $where): IQuery;
-    
-    /**
-     * 
      * @param string $column
      * @param string $operator
      * @param mixed $value
@@ -200,6 +193,13 @@ interface IQuery {
     
     /**
      * 
+     * @param IWhere $where
+     * @return IQuery
+     */
+    public function nested(IWhere $where): IQuery;
+    
+    /**
+     * 
      * @param array $columns
      * @return IQuery
      */
@@ -212,4 +212,18 @@ interface IQuery {
      * @return IQuery
      */
     public function orderBy(string $column, bool $asc = true): IQuery;
+    
+    /**
+     * 
+     * @param int $count
+     * @return IQuery
+     */
+    public function limit(int $count): IQuery;
+    
+    /**
+     * 
+     * @param int $count
+     * @return IQuery
+     */
+    public function offset(int $count): IQuery;
 }

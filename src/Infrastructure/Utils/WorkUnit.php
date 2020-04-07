@@ -7,9 +7,9 @@ use Illuminate\Database\ConnectionInterface;
 
 use Koldown\Hexagonal\Domain\Contracts\IEntity;
 use Koldown\Hexagonal\Domain\Contracts\IEntityCollection;
-use Koldown\Hexagonal\Domain\Contracts\IAggregationMapper;
+use Koldown\Hexagonal\Domain\Contracts\IAggregationArray;
 use Koldown\Hexagonal\Domain\Contracts\IRepository;
-use Koldown\Hexagonal\Domain\Utils\AggregationMapperCascade;
+use Koldown\Hexagonal\Domain\Utils\AggregationCascade;
 
 use Koldown\Hexagonal\Infrastructure\Contracts\IWorkUnit;
 use Koldown\Hexagonal\Infrastructure\Contracts\IEntityStore;
@@ -52,9 +52,9 @@ class WorkUnit implements IWorkUnit {
     
     /**
      *
-     * @var IAggregationMapper 
+     * @var IAggregationArray 
      */
-    private $aggregationMapper;
+    private $aggregationCascade;
     
     // Constructor de la clase WorkUnit
     
@@ -87,38 +87,58 @@ class WorkUnit implements IWorkUnit {
         return $this->repositoryStore->get($classEntity); // Retornando repositorio
     }
     
-    public function setEntity(IEntity $entity): void {
+    public function addEntity(IEntity $entity): void {
         $this->entityStore->attach($entity, new EntityStatus(EntityStatus::STATE_DIRTY, clone $entity));
     }
     
-    public function setEntities(array $entities): void {
+    public function addEntities(array $entities): void {
         foreach ($entities as $entity) { 
-            $this->setEntity($entity); // Cargando entidades
+            if ($entity instanceof IEntity) {
+                $this->addEntity($entity); // Cargando entidad del listado
+            }
         }
     }
     
     public function persist(IEntity $entity): void {
         $this->insert($entity); // Registrando entidad principal
         
-        $aggregations = $this->getAggregationMapper()->toEntity($entity);
+        $aggregations = $this->getAggregationCascade()->ofEntity($entity);
         
         foreach ($aggregations as $aggregations) {
             $this->insertAggregation($entity, $aggregations);
         } // Registrando listado de agregaciones en cascada
     }
     
+    public function persists(IEntityCollection $collection): void {
+        foreach ($collection as $entity) {
+            $this->persist($entity); // Persistiendo entidad de colección
+        }
+    }
+    
     public function safeguard(IEntity $entity): void {
         $this->modify($entity); // Actualizando entidad principal
         
-        $aggregations = $this->getAggregationMapper()->toEntity($entity);
+        $aggregations = $this->getAggregationCascade()->ofEntity($entity);
         
         foreach ($aggregations as $aggregation) {
             $this->modifyAggregation($entity, $aggregation);
         } // Actualizando listado de agregaciones en cascada
     }
+    
+    public function safeguards(IEntityCollection $collection): void {
+        foreach ($collection as $entity) {
+            $this->safeguard($entity); // Actualizando entidad de colección
+        }
+    }
                 
     public function destroy(IEntity $entity): void {
         $this->entityStore->attach($entity, new EntityStatus(EntityStatus::STATE_REMOVE));
+    }
+    
+    public function destroys(IEntityCollection $collection): void {
+        foreach ($collection as $entity) {
+            $this->destroy($entity); // Eliminando entidad de colección
+        }
     }
 
     public function transaction(): void {
@@ -130,15 +150,15 @@ class WorkUnit implements IWorkUnit {
             $entityStatus = $this->entityStore[$entity]; // Recuperando datos del proceso
             
             switch ($entityStatus->getStatus()) {
-                case (EntityStatus::STATE_DIRTY):
+                case (EntityStatus::STATE_DIRTY) :
                     $this->update($entity, $entityStatus); // Actualizando
                 break;
             
-                case (EntityStatus::STATE_NEW):
+                case (EntityStatus::STATE_NEW) :
                     // Se debería registrar la entidad
                 break;
             
-                case (EntityStatus::STATE_REMOVE):
+                case (EntityStatus::STATE_REMOVE) :
                     $this->delete($entity);
                 break;
             }
@@ -198,7 +218,7 @@ class WorkUnit implements IWorkUnit {
      * @return void
      */
     protected function insert(IEntity $entity): void {
-        $this->getRepository(get_class($entity))->insert($entity); $this->setEntity($entity); 
+        $this->getRepository(get_class($entity))->insert($entity); $this->addEntity($entity); 
     }
 
     /**
@@ -294,13 +314,13 @@ class WorkUnit implements IWorkUnit {
 
     /**
      * 
-     * @return IAggregationMapper
+     * @return IAggregationArray
      */
-    protected function getAggregationMapper(): IAggregationMapper {
-        if (is_null($this->aggregationMapper)) {
-            $this->aggregationMapper = new AggregationMapperCascade();
-        } // Instanciando mapeador de agregaciones
+    protected function getAggregationCascade(): IAggregationArray {
+        if (is_null($this->aggregationCascade)) {
+            $this->aggregationCascade = new AggregationCascade();
+        } // Instanciando listador de agregaciones
         
-        return $this->aggregationMapper; // Retornando mapeador de agregaciones
+        return $this->aggregationCascade; // Retornando listador de agregaciones
     }
 }

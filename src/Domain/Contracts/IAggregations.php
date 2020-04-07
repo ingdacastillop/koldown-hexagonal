@@ -30,89 +30,77 @@ interface IAggregations {
     
     /**
      * 
-     * @param string $key
+     * @param string $keyAggregation
      * @param string $class
-     * @param int $type
-     * @param bool $composition 
+     * @param bool $mappable 
      * @return IAggregations
      */
-    public function attach(string $key, string $class, int $type, bool $composition = true): IAggregations;
+    public function hasOne(string $keyAggregation, string $class, bool $mappable = true): IAggregations;
     
     /**
      * 
-     * @param string $key
+     * @param string $keyAggregation
      * @param string $class
-     * @param bool $composition 
+     * @param bool $mappable 
      * @return IAggregations
      */
-    public function hasOne(string $key, string $class, bool $composition = true): IAggregations;
+    public function hasMany(string $keyAggregation, string $class, bool $mappable = true): IAggregations;
     
     /**
      * 
-     * @param string $key
+     * @param string $keyAggregation
      * @param string $class
-     * @param bool $composition 
+     * @param bool $mappable 
      * @return IAggregations
      */
-    public function hasMany(string $key, string $class, bool $composition = true): IAggregations;
+    public function composedBy(string $keyAggregation, string $class, bool $mappable = true): IAggregations;
     
     /**
      * 
-     * @param string $key
+     * @param string $keyAggregation
      * @param string $class
-     * @param bool $composition 
+     * @param string|null $column
+     * @param bool $mappable
      * @return IAggregations
      */
-    public function belongTo(string $key, string $class, bool $composition = true): IAggregations;
+    public function belongTo(string $keyAggregation, string $class, ?string $column = null, bool $mappable = true): IAggregations;
     
     /**
      * 
-     * @param string $key
+     * @param string $keyAggregation
      * @param string $class
-     * @param bool $composition 
+     * @param bool $mappable 
      * @return IAggregations
      */
-    public function containTo(string $key, string $class, bool $composition = true): IAggregations;
+    public function containTo(string $keyAggregation, string $class, bool $mappable = true): IAggregations;
 
     /**
      * 
-     * @return array
+     * @return IAggregationsKeys
      */
-    public function getKeys(): array;
+    public function keys(): IAggregationsKeys;
     
     /**
      * 
      * @return array
      */
-    public function getHidration(): array;
+    public function forCascade(): array;
     
     /**
      * 
      * @return array
      */
-    public function getHidrationKeys(): array;
+    public function forHidration(): array;
     
     /**
      * 
      * @return array
      */
-    public function getCascade(): array;
+    public function forBelong(): array;
     
     /**
      * 
      * @return array
      */
-    public function getCascadeKeys(): array;
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getComposition(): array;
-    
-    /**
-     * 
-     * @return array
-     */
-    public function getCompositionKeys(): array;
+    public function forMappable(): array;
 }

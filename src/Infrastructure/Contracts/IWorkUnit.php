@@ -4,6 +4,7 @@ namespace Koldown\Hexagonal\Infrastructure\Contracts;
 
 use Koldown\Hexagonal\Domain\Contracts\IRepository;
 use Koldown\Hexagonal\Domain\Contracts\IEntity;
+use Koldown\Hexagonal\Domain\Contracts\IEntityCollection;
 
 interface IWorkUnit {
     
@@ -40,14 +41,14 @@ interface IWorkUnit {
      * @param IEntity $entity
      * @return void
      */
-    public function setEntity(IEntity $entity): void;
+    public function addEntity(IEntity $entity): void;
     
     /**
      * 
      * @param array $entities
      * @return void
      */
-    public function setEntities(array $entities): void;
+    public function addEntities(array $entities): void;
     
     /**
      * 
@@ -58,10 +59,24 @@ interface IWorkUnit {
     
     /**
      * 
+     * @param IEntityCollection $collection
+     * @return void
+     */
+    public function persists(IEntityCollection $collection): void;
+    
+    /**
+     * 
      * @param IEntity $entity
      * @return void
      */
     public function safeguard(IEntity $entity): void;
+    
+    /**
+     * 
+     * @param IEntityCollection $collection
+     * @return void
+     */
+    public function safeguards(IEntityCollection $collection): void;
 
     /**
      * 
@@ -69,6 +84,13 @@ interface IWorkUnit {
      * @return void
      */
     public function destroy(IEntity $entity): void;
+
+    /**
+     * 
+     * @param IEntityCollection $collection
+     * @return void
+     */
+    public function destroys(IEntityCollection $collection): void;
 
     /**
      * 

@@ -30,18 +30,54 @@ class Aggregation implements IAggregation {
      *
      * @var bool 
      */
-    private $hidration;
+    private $composed;
     
     /**
      *
      * @var bool 
      */
-    private $composition;
+    private $belong;
+    
+    /**
+     *
+     * @var string 
+     */
+    private $key;
+    
+    /**
+     *
+     * @var bool 
+     */
+    private $mappable;
     
     // Constructor de la clase Aggregation
     
-    public function __construct(string $class, bool $array = false, bool $cascade = false, bool $hidration = false, bool $composition = true) {
-        $this->class = $class; $this->array = $array; $this->cascade = $cascade; $this->hidration = $hidration; $this->composition = $composition;
+    /**
+     * 
+     * @param string $class
+     * @param bool $array
+     * @param bool $cascade
+     * @param bool $composed
+     * @param bool $belong
+     * @param string|null $key
+     * @param bool $mappable
+     */
+    public function __construct(
+            string $class, 
+            bool $array    = false, 
+            bool $cascade  = false, 
+            bool $composed = false,
+            bool $belong   = false,
+            ?string $key   = null,
+            bool $mappable = true) {
+        
+        $this->class    = $class;
+        $this->array    = $array;
+        $this->cascade  = $cascade; 
+        $this->composed = $composed;
+        $this->belong   = $belong;
+        $this->key      = $key;
+        $this->mappable = $mappable;
     }
     
     // Métodos de la clase Aggregation
@@ -59,10 +95,18 @@ class Aggregation implements IAggregation {
     }
     
     public function isHidration(): ?bool {
-        return $this->hidration;
+        return $this->composed;
     }
     
-    public function isComposition(): ?bool {
-        return $this->composition;
+    public function isBelong(): ?bool {
+        return $this->belong;
+    }
+    
+    public function getKey(): ?string {
+        return $this->key;
+    }
+    
+    public function isMappable(): ?bool {
+        return $this->mappable;
     }
 }

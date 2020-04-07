@@ -2,6 +2,9 @@
 
 namespace Koldown\Hexagonal\Domain\Utils;
 
+use Closure;
+
+use Koldown\Hexagonal\Domain\Contracts\IAggregationsKeys;
 use Koldown\Hexagonal\Domain\Contracts\IAggregation;
 use Koldown\Hexagonal\Domain\Contracts\IAggregations;
 
@@ -15,17 +18,26 @@ class Aggregations implements IAggregations {
      */
     private $aggregations = [];
     
-    // Constantes de la clase Aggregations
-    
-    const HAS_ONE    = 101;
-    
-    const HAS_MANY   = 102;
-    
-    const BELONG_TO  = 201;
-    
-    const CONTAIN_TO = 202;
-    
     // Métodos de la clase Aggregations
+    
+    /**
+     * 
+     * @param Closure $closure
+     * @return array
+     */
+    protected function forProcess(Closure $closure): array {
+        $cascades = []; // Contenedor de relaciones para gestion de datos
+        
+        foreach ($this->aggregations as $key => $value) {
+            if ($closure($value)) {
+                $cascades[$key] = $value;
+            }
+        } // Agregando relaciones para gestion de datos
+        
+        return $cascades; // Retornando relaciones para gestion de datos
+    }
+    
+    // Métodos sobrescritos de la clase IAggregations
     
     public function set(string $key, IAggregation $aggregation): void {
         $this->aggregations[$key] = $aggregation; 
@@ -39,117 +51,47 @@ class Aggregations implements IAggregations {
         return (!$this->exists($key)) ? null : $this->aggregations[$key];
     }
     
-    public function attach(string $key, string $class, int $type, bool $composition = true): IAggregations {
-        switch ($type) {
-            case (self::HAS_ONE):
-                $this->set($key, new Aggregation($class, false, true, false, $composition));
-            break;
-                
-            case (self::HAS_MANY):
-                $this->set($key, new Aggregation($class, true, true, false, $composition));
-            break;
-        
-            case (self::BELONG_TO):
-                $this->set($key, new Aggregation($class, false, false, true, $composition));
-            break;
-        
-            case (self::CONTAIN_TO):
-                $this->set($key, new Aggregation($class, false, false, false, $composition));
-            break;
+    public function hasOne(string $keyAggregation, string $class, bool $mappable = true): IAggregations {
+        $this->set($keyAggregation, new HasOne($class, $mappable)); return $this;
+    }
+    
+    public function hasMany(string $keyAggregation, string $class, bool $mappable = true): IAggregations {
+        $this->set($keyAggregation, new HasMany($class, $mappable)); return $this;
+    }
+    
+    public function composedBy(string $keyAggregation, string $class, bool $mappable = true): IAggregations {
+        $this->set($keyAggregation, new ComposedBy($class, $mappable)); return $this;
+    }
+    
+    public function belongTo(string $keyAggregation, string $class, ?string $column = null, bool $mappable = true): IAggregations {
+        if (is_null($column)) {
+            $column = "{$keyAggregation}_id"; // Redefiniendo valor de clave de la columna 
         }
         
-        return $this; // Retornando instancia como variable para recursividad
+        $this->set($keyAggregation, new BelongTo($class, $column, $mappable)); return $this;
     }
     
-    public function hasOne(string $key, string $class, bool $composition = true): IAggregations {
-        return $this->attach($key, $class, self::HAS_ONE, $composition);
+    public function containTo(string $keyAggregation, string $class, bool $mappable = true): IAggregations {
+        $this->set($keyAggregation, new ContainTo($class, $mappable)); return $this;
     }
     
-    public function hasMany(string $key, string $class, bool $composition = true): IAggregations {
-        return $this->attach($key, $class, self::HAS_MANY, $composition);
+    public function keys(): IAggregationsKeys {
+        return AggregationsKeys::getInstance()->setAggregations($this->aggregations);
     }
     
-    public function belongTo(string $key, string $class, bool $composition = true): IAggregations {
-        return $this->attach($key, $class, self::BELONG_TO, $composition);
+    public function forCascade(): array {
+        return $this->forProcess(function (IAggregation $aggregation) { return $aggregation->isCascade(); });
     }
     
-    public function containTo(string $key, string $class, bool $composition = true): IAggregations {
-        return $this->attach($key, $class, self::CONTAIN_TO, $composition);
+    public function forHidration(): array {
+        return $this->forProcess(function (IAggregation $aggregation) { return $aggregation->isHidration(); });
     }
     
-    public function getKeys(): array {
-        return array_keys($this->aggregations);
+    public function forBelong(): array {
+        return $this->forProcess(function (IAggregation $aggregation) { return $aggregation->isBelong(); });
     }
     
-    public function getHidration(): array {
-        $hidrations = []; // Contenedor de relaciones de hidratación
-        
-        foreach ($this->aggregations as $key => $value) {
-            if ($value->isHidration()) {
-                $hidrations[$key] = $value;
-            }
-        } // Agregando relaciones de hidratación
-        
-        return $hidrations; // Retornando relaciones de hidratación
-    }
-    
-    public function getHidrationKeys(): array {
-        $hidrations = []; // Contenedor de claves de hidrataciones
-        
-        foreach ($this->aggregations as $key => $value) {
-            if ($value->isHidration()) {
-                array_push($hidrations, $key);
-            }
-        } // Agregando claves de las hidrataciones
-        
-        return $hidrations; // Retornando claves de hidrataciones
-    }
-    
-    public function getCascade(): array {
-        $cascades = []; // Contenedor de relaciones en cascada
-        
-        foreach ($this->aggregations as $key => $value) {
-            if ($value->isCascade()) {
-                $cascades[$key] = $value;
-            }
-        } // Agregando relaciones en cascada
-        
-        return $cascades; // Retornando relaciones en cascada
-    }
-    
-    public function getCascadeKeys(): array {
-        $cascades = []; // Contenedor de claves de cascada
-        
-        foreach ($this->aggregations as $key => $value) {
-            if ($value->isCascade()) {
-                array_push($cascades, $key);
-            }
-        } // Agregando claves de las cascada
-        
-        return $cascades; // Retornando claves de cascada
-    }
-    
-    public function getComposition(): array {
-        $compositions = []; // Contenedor de relaciones de composición
-        
-        foreach ($this->aggregations as $key => $value) {
-            if ($value->isComposition()) {
-                $compositions[$key] = $value;
-            }
-        } // Agregando relaciones de composición
-        
-        return $compositions; // Retornando relaciones de composición
-    }
-    
-    public function getCompositionKeys(): array {
-        $aggregations = []; // Contenedor de claves de agregaciones
-        
-        foreach ($this->aggregations as $key => $value) {
-            if ($value->isComposition()) {
-                array_push($aggregations, $key);
-            }
-        } // Agregando claves de las agregaciones
-        
-        return $aggregations; // Retornando claves de agregaciones
+    public function forMappable(): array {
+        return $this->forProcess(function (IAggregation $aggregation) { return $aggregation->isMappable(); });
     }
 }

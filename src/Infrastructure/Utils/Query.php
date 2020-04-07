@@ -130,6 +130,7 @@ class Query implements IQuery {
         if ($isSelect) {
             $this->flushQueryGroups($builder);  // Agrupadores
             $this->flushQueryOrders($builder);  // Ordenadores
+            $this->flushQueryClauses($builder); // Claúsulas
         }
         
         return $builder; // Retornando builder generado para proceso
@@ -175,6 +176,19 @@ class Query implements IQuery {
         if (is_array($this->getOrders())) {
             foreach ($this->getOrders() as $orderBy) {
                 $orderBy->flush($builder); // Cargando clausula 'ORDER BY'
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param ModelBuilder $builder
+     * @return void
+     */
+    private function flushQueryClauses(ModelBuilder $builder): void {
+        if (is_array($this->getClauses())) {
+            foreach ($this->getClauses() as $clause) {
+                $clause->flush($builder); // Cargando claúsula
             }
         }
     }

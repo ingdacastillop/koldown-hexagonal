@@ -53,9 +53,9 @@ class Repository implements IRepository {
     }
 
     public function insert(IEntity $entity): void {
-        $hidrations = $entity->getAggregations()->getHidrationKeys();
+        $hidrations = $entity->getAggregations()->keys()->hidration();
         
-        $model      = $this->getQuery()->insert($entity->toArray(), $hidrations);
+        $model = $this->getQuery()->insert($entity->toArray(), $hidrations);
         
         $this->mapper($model, $entity); // Actualizando entity generada
     }
@@ -70,7 +70,7 @@ class Repository implements IRepository {
 
     public function fetch($id, array $aggregations = null): ?IEntity {
         if (is_null($aggregations)) {
-            $aggregations = $this->getEntity()->getAggregations()->getCompositionKeys();
+            $aggregations = $this->getEntity()->getAggregations()->keys()->mappable();
         } // Estableciendo relaciones predeterminadas
         
         return $this->createEntity($this->getQuery()->record($id, $aggregations));
@@ -78,7 +78,7 @@ class Repository implements IRepository {
 
     public function fetchAll(array $aggregations = null): IEntityCollection {
         if (is_null($aggregations)) {
-            $aggregations = $this->getEntity()->getAggregations()->getCompositionKeys();
+            $aggregations = $this->getEntity()->getAggregations()->keys()->mappable();
         } // Estableciendo relaciones predeterminadas
         
         return $this->createCollection($this->getQuery()->catalog($aggregations));
@@ -86,7 +86,7 @@ class Repository implements IRepository {
     
     public function resources(): IEntityCollection {
         $entity       = $this->getEntity(); // Entidad que gestiona recurso
-        $aggregations = $entity->getAggregations()->getCompositionKeys();
+        $aggregations = $entity->getAggregations()->keys()->mappable();
         
         return $this->createCollection($this->getQuery($entity)->catalog($aggregations));
     }
@@ -96,7 +96,7 @@ class Repository implements IRepository {
     }
 
     public function save(IEntity $entity): void {
-        $hidrations = $entity->getAggregations()->getHidrationKeys();
+        $hidrations = $entity->getAggregations()->keys()->hidration();
         
         $modelo     = $this->getQuery()->update($entity->getPrimaryKey(), $entity->toArray(), $hidrations);
         

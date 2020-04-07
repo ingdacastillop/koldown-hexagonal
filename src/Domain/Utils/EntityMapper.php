@@ -8,6 +8,8 @@ use Koldown\Hexagonal\Domain\Contracts\IEntity;
 use Koldown\Hexagonal\Domain\Contracts\IEntityCollection;
 use Koldown\Hexagonal\Domain\Contracts\IEntityMapper;
 
+use Koldown\Utils\Str;
+
 class EntityMapper implements IEntityMapper {
     
     // Atributos de la clase EntityMapper
@@ -48,9 +50,10 @@ class EntityMapper implements IEntityMapper {
     
     /**
      * 
+     * @param ReflectionClass $reflection
      * @param IEntity $entity
      * @param string $key
-     * @param type $value
+     * @param mixed $value
      * @return void
      */
     protected function setValueKeyEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value): void {
@@ -63,13 +66,14 @@ class EntityMapper implements IEntityMapper {
     
     /**
      * 
+     * @param ReflectionClass $reflection
      * @param IEntity $entity
      * @param string $key
-     * @param type $value
+     * @param mixed $value
      * @return void
      */
     protected function setValuePropertyEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value): void {
-        $accessor = $reflection->getProperty($key);
+        $accessor = $reflection->getProperty($key); // Accesor del valor
 
         if ($accessor->isPublic()) {
             $accessor->setValue($entity, $this->getValue($entity, $key, $value));
@@ -80,12 +84,13 @@ class EntityMapper implements IEntityMapper {
     
     /**
      * 
+     * @param ReflectionClass $reflection
      * @param IEntity $entity
      * @param string $key
-     * @param type $value
+     * @param mixed $value
      */
     protected function setValueMethodEntity(ReflectionClass $reflection, IEntity $entity, string $key, $value) {
-        $setter = "set{$this->getCamelCaseName($key)}"; // Método
+        $setter = Str::getInstance()->getCamelCase()->setter($key); // Método
             
         if ($reflection->hasMethod($setter)) {
             $accessor = $reflection->getMethod($setter);
@@ -94,15 +99,6 @@ class EntityMapper implements IEntityMapper {
                 $accessor->invoke($entity, $this->getValue($entity, $key, $value));
             } // Asignando valor de la propiedad por método
         }
-    }
-    
-    /**
-     * 
-     * @param string $key
-     * @return string
-     */
-    protected function getCamelCaseName(string $key): string {
-        return str_replace(" ", "", ucwords(str_replace(array("_", "-"), " ", $key)));
     }
 
     /**

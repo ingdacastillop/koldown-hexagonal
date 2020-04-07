@@ -7,6 +7,8 @@ use Koldown\Hexagonal\Infrastructure\Contracts\Sql\IWhere;
 use Koldown\Hexagonal\Infrastructure\Utils\Sql\Where;
 use Koldown\Hexagonal\Infrastructure\Utils\Sql\GroupBy;
 use Koldown\Hexagonal\Infrastructure\Utils\Sql\OrderBy;
+use Koldown\Hexagonal\Infrastructure\Utils\Sql\Limit;
+use Koldown\Hexagonal\Infrastructure\Utils\Sql\Offset;
 
 trait QueryClauseTrait {
     
@@ -29,6 +31,12 @@ trait QueryClauseTrait {
      * @var array 
      */
     private $orders;
+    
+    /**
+     *
+     * @var array 
+     */
+    private $clauses;
 
     // Métodos del trait QueryClauseTrait
     
@@ -82,14 +90,10 @@ trait QueryClauseTrait {
     
     /**
      * 
-     * @return array
+     * @return array|null
      */
-    private function getInstanceOrders() : array {
-        if (is_null($this->orders)) {
-            $this->orders = []; // Inicializando
-        }
-        
-        return $this->orders; // OrdersBy
+    protected function getClauses(): ?array {
+        return $this->clauses;
     }
 
     // Métodos sobrescritos de la interfaz IQuery
@@ -151,8 +155,26 @@ trait QueryClauseTrait {
     }
     
     public function orderBy(string $column, bool $asc = true): IQuery {
-        $orders = $this->getInstanceOrders(); // OrdersBy de la consulta
+        if (is_null($this->orders)) {
+            $this->orders = []; // Inicializando listado
+        }
         
-        array_push($orders, new OrderBy($column, $asc)); return $this;
+        array_push($this->orders, new OrderBy($column, $asc)); return $this;
+    }
+    
+    public function limit(int $count): IQuery {
+        if (is_null($this->clauses)) {
+            $this->clauses = []; // Inicializando claúsulas
+        }
+        
+        array_push($this->clauses, new Limit($count)); return $this;
+    }
+    
+    public function offset(int $count): IQuery {
+        if (is_null($this->clauses)) {
+            $this->clauses = []; // Inicializando claúsulas
+        }
+        
+        array_push($this->clauses, new Offset($count)); return $this;
     }
 }

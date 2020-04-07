@@ -2,14 +2,14 @@
 
 namespace Koldown\Hexagonal\Domain\Contracts;
 
-interface IAggregationMapper {
+interface IAggregationArray {
     
-    // Métodos de la interfaz IAggregationMapper
+    // Métodos de la interfaz IAggregationArray
     
     /**
      * 
      * @param IEntity $entity
      * @return array
      */
-    public function toEntity(IEntity $entity): array;
+    public function ofEntity(IEntity $entity): array;
 }
